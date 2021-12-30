@@ -13,9 +13,9 @@ public:
     virtual ~Writer();
 
     void setName(string name);
-    void setAge(int age);
+    void setAge(uint32_t age);
     void setFavor(string favor);
     string getName();
-    int getAge();
+    uint32_t getAge();
     string getFavor();
 };

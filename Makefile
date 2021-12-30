@@ -1,13 +1,14 @@
 SRC_DIR = src
 SERVER_DIR = server
 CLIENT_DIR = client
+TEST_DIR = test
 # 确保生成obj文件的时候指定目录是存在的
 DIR_GUARD=mkdir -p $(@D)
 OBJ_DIR = build
 # g++的对应参数
 INC_DIR	= -Iinclude -I3rdparty/uv-cpp/uv/include -I3rdparty/uv-cpp/libuv1.30.0/include
 LIB_DIR = -L3rdparty/lib
-LIB_NAME= -luv_cpp -luv
+LIB_NAME= -luv_cpp -luv -pthread
 
 
 # SOURCES := $(wildcard $(SRC_DIR)/$(SERVER_DIR)/*.cpp $(SRC_DIR)/$(CLIENT_DIR)/.*cpp $(SRC_DIR))
@@ -24,12 +25,17 @@ CLIENT_OBJ := $(patsubst $(SRC_DIR)/%,%,$(CLIENT_SOURCES))
 CLIENT_OBJ := $(patsubst %.cpp,%.o,$(CLIENT_OBJ))
 CLIENT_OBJ := $(addprefix $(OBJ_DIR)/,$(CLIENT_OBJ))
 
+TEST_SOURCES := $(wildcard $(SRC_DIR)/$(TEST_DIR)/*.cpp)
+TEST_OBJ := $(patsubst $(SRC_DIR)/%,%,$(TEST_SOURCES))
+TEST_OBJ := $(patsubst %.cpp,%.o,$(TEST_OBJ))
+TEST_OBJ := $(addprefix $(OBJ_DIR)/,$(TEST_OBJ))
+
 
 # VPATH=src:include
 
 # 设置编译相关内容
 CC      = g++
-CPPFLAGS= -Wall $(INC_DIR) -c -o
+CPPFLAGS= -Wall $(INC_DIR) -c -g -o
 
 # build client and server. TODO: separate this makefile into two makefile
 all : client server
@@ -48,6 +54,12 @@ $(OBJ_DIR)/$(SERVER_DIR)/server: $(SERVER_OBJ)
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	@$(DIR_GUARD)
 	@$(CC) $(CPPFLAGS) $@ $<
+
+test : $(OBJ_DIR)/$(TEST_DIR)/test
+$(OBJ_DIR)/$(TEST_DIR)/test: $(TEST_OBJ)
+	@$(DIR_GUARD)
+	@$(CC) -o $@ $(TEST_OBJ) $(LIB_DIR) $(LIB_NAME) 
+
 
 .PHONY:clean
 

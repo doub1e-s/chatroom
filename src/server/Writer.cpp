@@ -16,7 +16,7 @@ void Writer::setName(string name)
     m_name = name;
 }
 
-void Writer::setAge(int age)
+void Writer::setAge(uint32_t age)
 {
     m_age = age;
 }
@@ -31,7 +31,7 @@ string Writer::getName()
     return m_name;
 }
 
-int Writer::getAge()
+uint32_t Writer::getAge()
 {
     return m_age;
 }
