@@ -35,7 +35,7 @@ TEST_OBJ := $(addprefix $(OBJ_DIR)/,$(TEST_OBJ))
 
 # 设置编译相关内容
 CC      = g++
-CPPFLAGS= -Wall $(INC_DIR) -c -g -o
+CPPFLAGS= -Wall -std=c++11 $(INC_DIR) -c -g -o
 
 # build client and server. TODO: separate this makefile into two makefile
 all : client server
