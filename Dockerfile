@@ -1,14 +1,21 @@
 FROM centos:7 AS build
 
 # Install depends tools.
-RUN yum install -y gcc make gcc-c++ automake libtool git && \
-        #RPC failed; result=35, HTTP code = 0
-        git config --global http.postBuffer 50M && git clone https://github.com/libuv/libuv.git /usr/local/libuv
+# https://segmentfault.com/a/1190000041012397
+# fix https://stackoverflow.com/questions/44205687/glibcxx-3-4-21-not-found-on-centos-7
+# fix https://segmentfault.com/a/1190000041012397
+RUN yum install -y gcc cmake make gcc-c++ automake libtool
+        #git clone https://github.com/libuv/libuv.git /usr/local/libuv
+COPY . /chat-room
+
 
 # Build and install chat-room.
-WORKDIR /usr/local/libuv
-RUN sh autogen.sh && ./configure && make && make install
-
+WORKDIR /chat-room
+RUN cd 3rdparty/libuv && sh autogen.sh && ./configure && make && make install \
+       && cd ../uv-cpp && mkdir build && cd build && cmake .. && make \
+       && cp libuv_cpp.a ../../lib \
+       && cd /chat-room && make
+#
 ############################################################
 # dist
 ############################################################
