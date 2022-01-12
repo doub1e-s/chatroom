@@ -64,4 +64,4 @@ $(OBJ_DIR)/$(TEST_DIR)/test: $(TEST_OBJ)
 .PHONY:clean
 
 clean:
-	@rm -r $(OBJ_DIR)
+	@rm -rf $(OBJ_DIR)
