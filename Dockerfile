@@ -15,7 +15,7 @@ COPY . /chat-room
 WORKDIR /chat-room
 
 # avoid compiled local
-RUN make clean && make
+RUN make clean && make dep && make server
 
 ############################################################
 # dist
@@ -33,3 +33,5 @@ WORKDIR /usr/local/chat-room
 
 # add dynamic depot directroy
 RUN echo $(pwd)/build/lib >> /etc/ld.so.conf && ldconfig
+
+CMD ["./build/server/server"]
