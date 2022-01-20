@@ -82,5 +82,4 @@ $(OBJ_DIR)/$(TEST_DIR)/test: $(TEST_OBJ)
 .PHONY:clean
 
 clean:
-	@echo $(DEP_OBJ_DIR)
 	@rm -rf $(OBJ_DIR) $(DEP_OBJ_DIR)
