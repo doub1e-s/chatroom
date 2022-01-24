@@ -1,7 +1,7 @@
 #include "User.hpp"
 using namespace std;
 using namespace uv;
-namespace damon {
+namespace Damon {
 
 User::User(TcpConnectionPtr tcpConnPtr)
 {

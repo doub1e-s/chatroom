@@ -1,6 +1,6 @@
-#include "Server.hpp"
+#include "ChatroomServer.hpp"
 
-using namespace damon;
+using namespace Damon;
 using namespace std;
 
 ChatroomServer::ChatroomServer()
@@ -12,7 +12,7 @@ ChatroomServer::ChatroomServer()
 ChatroomServer::~ChatroomServer()
 {
     cout << "destruct chatroom server\n";
-    terminate();
+    stop();
 }
 
 // use configure file to decide which port to listening
@@ -29,12 +29,12 @@ uint32_t ChatroomServer::init()
         // setup callback functions
         cout << "bind callback function \n";
         using namespace std::placeholders;
-        m_server->setNewConnectCallback(std::bind(&ChatroomServer::onNewConnectCallback, this, _1));
-        m_server->setConnectCloseCallback(std::bind(&ChatroomServer::onConnectCloseCallback, this, _1));
-        m_server->setMessageCallback(std::bind(&ChatroomServer::onMessageCallback, this, _1, _2, _3));
+        m_server->setNewConnectCallback(bind(&ChatroomServer::onNewConnectCallback, this, _1));
+        m_server->setConnectCloseCallback(bind(&ChatroomServer::onConnectCloseCallback, this, _1));
+        m_server->setMessageCallback(bind(&ChatroomServer::onMessageCallback, this, _1, _2, _3));
 
         m_server->bindAndListen(addr);
-        std::cout << "bind success, the port is addr" << addr.toStr() << endl;
+        cout << "bind success, the port is addr" << addr.toStr() << endl;
         start();
     }
 
@@ -44,7 +44,7 @@ uint32_t ChatroomServer::init()
 void ChatroomServer::start()
 {
     cout << "start \n";
-    m_thread = std::thread(&ChatroomServer::run, this);
+    m_thread = thread(&ChatroomServer::run, this);
 }
 
 void ChatroomServer::run()
@@ -52,7 +52,7 @@ void ChatroomServer::run()
     cout << "do run \n";
     m_loop->run();
 
-    std::cout << "loop end \n";
+    cout << "loop end \n";
 
     delete m_loop;
 }
@@ -74,6 +74,7 @@ void ChatroomServer::stop()
             m_thread.join();
         }
     }
+    delete m_loop;
 }
 
 void ChatroomServer::onNewConnectCallback(weak_ptr<TcpConnection> tcpConn)
@@ -81,8 +82,8 @@ void ChatroomServer::onNewConnectCallback(weak_ptr<TcpConnection> tcpConn)
     cout << " new connect coming \n";
     auto sharedTcpConnPtr = tcpConn.lock();
     shared_ptr<User> pUser = make_shared<User>(sharedTcpConnPtr);
-    string addName = sharedTcpConnPtr->Name();
-    m_userPtrMap[addName] = pUser;
+    string userName = sharedTcpConnPtr->Name();
+    m_address2User[userName] = pUser;
 
     // set the color for the client
     // pick up a color when the client comes firstly, currently exist six kind of color
@@ -95,53 +96,57 @@ void ChatroomServer::onConnectCloseCallback(weak_ptr<TcpConnection> tcpConn)
 {
     cout << "connection close \n";
     auto sharedTcpConnPtr = tcpConn.lock();
-    string addName = sharedTcpConnPtr->Name();
-    m_userPtrMap.erase(addName);
+    m_address2User.erase(sharedTcpConnPtr->Name());
 }
 
 void ChatroomServer::onMessageCallback(uv::TcpConnectionPtr ptr, const char *data, ssize_t size)
 {
-    std::cout << "show message " << data << endl;
+    // get client， addressName will like 127.0.0.1:46840
+    string addressName = ptr->Name();
 
-    // get client
-    string addName = ptr->Name();
-    std::cout << "show ptr name is " << ptr->Name() << endl;
-
-    // register first
-    if (m_userPtrMap.find(addName) != m_userPtrMap.end())
+    // make sure the message isn't empty
+    if (size != 0 && data[0] != 0 && m_address2User.find(addressName) != m_address2User.end())
     {
-        std::cout << "find name " << endl;
-        shared_ptr<User> pUser = m_userPtrMap.at(addName);
+        // cout << "find name " << endl;
+        shared_ptr<User> pUser = m_address2User.at(addressName);
         // set name, callback to client
         string strData(data);
         if (strData.rfind("#name:", 0) == 0)
         {
-            std::cout << "set a name " << endl;
             string username = strData.substr(6, size);
             pUser->setName(username);
-            string answer2client = "join success, you name is " + username;
-            int dataLength = answer2client.length() + 1;
-            // convert the message to char*, and then send it to client
-            char *char_arr = &answer2client[0];
-            ptr->write(char_arr, dataLength, nullptr);
         }
         else
         {
+            shared_ptr<User> pUser = m_address2User.at(addressName);
+            string senderName = pUser->getName();
+            uint32_t senderColor = pUser->m_color;
+            string message = to_string(senderColor) + "#" + senderName + " : " + strData;
+
             // broadcast the message
-            for (auto it = m_userPtrMap.begin(); it != m_userPtrMap.end(); it++)
-            {
-                // write message when the ptr isn't the sender
-                if (it->first != addName)
-                {
-                    shared_ptr<User> pUser = m_userPtrMap.at(addName);
-                    string senderName = pUser->getName();
-                    uint32_t senderColor = pUser->m_color;
-                    string sendMessage = std::to_string(senderColor) + "#" + senderName + " : " + strData;
-                    int dataLength = sendMessage.length() + 1;
-                    char *char_arr = &sendMessage[0];
-                    it->second->write(char_arr, dataLength, nullptr);
-                }
-            }
+            broadcastMessage(addressName, message);
         }
     }
+}
+
+int ChatroomServer::broadcastMessage(const string& sender, const string& message)
+{
+    for (auto it = m_address2User.begin(); it != m_address2User.end(); it++)
+    {
+        // write message when the ptr isn't the sender
+        if (it->first != sender)
+        {
+            int dataLength = message.length() + 1;
+            const char *char_arr = &message[0];
+            it->second->write(char_arr, dataLength, nullptr);
+        }
+    }
+
+    return 0;
+}
+
+
+std::thread& ChatroomServer::getThread()
+{
+    return m_thread;
 }

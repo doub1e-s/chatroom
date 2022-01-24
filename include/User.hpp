@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace damon{
+namespace Damon{
 
 
 class User

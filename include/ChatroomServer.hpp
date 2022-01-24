@@ -9,7 +9,7 @@
 
 using namespace uv;
 
-namespace damon{
+namespace Damon{
 
 
 class ChatroomServer
@@ -23,12 +23,14 @@ public:
     void start();
     void run();
     void stop();
+    int broadcastMessage(const string& sender, const string& message);
+    std::thread& getThread();
 
 private:
     std::atomic<bool> m_init;
     TcpServer* m_server;
     EventLoop* m_loop;
-    map<string, shared_ptr<User>> m_userPtrMap;
+    map<string, shared_ptr<User>> m_address2User;
     std::thread m_thread;
 
     void onNewConnectCallback(weak_ptr<TcpConnection> tcpConn);
