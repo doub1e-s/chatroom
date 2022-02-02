@@ -1,3 +1,4 @@
+/*
 #include "colormod.hpp" // namespace Color
 #include <iostream>
 #include <uv11.hpp>
@@ -48,5 +49,18 @@ int main() {
     //     t1.join();
     //     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     // }
+*/
 
+
+
+// use easylogging as log lib if it's nessesary
+// build easylogging as static library firstly
+#include "easylogging++.h"
+
+INITIALIZE_EASYLOGGINGPP
+
+// install the lib and add it when compiling
+int main(int argc, char* argv[]) {
+   LOG(INFO) << "My first info log using default logger";
+   return 0;
 }
