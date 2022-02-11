@@ -1,7 +1,5 @@
 #include "ChatroomServer.hpp"
 
-INITIALIZE_EASYLOGGINGPP
-
 using namespace Damon;
 using namespace std;
 

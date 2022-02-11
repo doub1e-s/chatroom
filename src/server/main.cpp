@@ -2,6 +2,8 @@
 #include <chrono>
 #include <thread>
 
+INITIALIZE_EASYLOGGINGPP
+
 using namespace std;
 
 int main() {
