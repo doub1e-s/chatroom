@@ -16,6 +16,7 @@ ChatroomClient::~ChatroomClient()
 
 uint32_t ChatroomClient::init()
 {
+    m_defModifier = new Color::Modifier();
     m_loop = uv::EventLoop::DefaultLoop();
     m_tcpClient = std::make_shared<uv::TcpClient>(m_loop);
     using namespace std::placeholders;
@@ -65,36 +66,17 @@ void ChatroomClient::onConnectStatusCallback(uv::TcpClient::ConnectStatus status
         int dataLength = m_username.length() + 1;
         char *data = &m_username[0];
         m_tcpClient->write(data, dataLength, nullptr);
-        cout << "create client successs" << endl;
-    }
-    else {
-        std::cout << "Error : connect to server fail" << std::endl;
+    } else {
+        std::cout << "Error : connect to server fail, please check the netstatus and the server statement" << std::endl;
     }
 }
 
+// client need to do nothing and all settle down by the server side
 void ChatroomClient::onMessageCallback(const char* data, ssize_t size)
 {
     string strData(data);
-    if (strData.find("#") == string::npos) {
-        if (strData.rfind("join", 0) == 0) {
-            string hello = "hello, nice to meet you ";
-            int dataLength = hello.length() + 1;
-            char *char_arr = &hello[0];
-            m_tcpClient->write(char_arr, dataLength, nullptr);
-        }
-        return;
-    }
-    string message = strData.substr(strData.find("#") + 1);
-    string color = strData.substr(0, strData.find("#"));
-    int colorNum = stoi(color);
-    // windows case, please remeber to include <Windows.h> header file
-    // 使用colorNum 设置用户发送的消息的颜色
-    // SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colorNum);
-    // std::cout << message << std::endl;
-    // // 将颜色重置回默认的颜色
-    // SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
-
-    std::cout << message << std::endl;
+    cout << "\r" <<  strData << "\n" << m_defModifier->toString() << "YOU: ";
+    cout.flush();
 }
 
 void ChatroomClient::getInput(string& input)
@@ -123,7 +105,6 @@ void ChatroomClient::run()
     while (!m_loggedIn) {
         std::this_thread::sleep_for(chrono::milliseconds(400));
     }
-    cout << "do run \n";
     m_loop->run();
 
     cout << "loop end \n";
@@ -143,6 +124,8 @@ void ChatroomClient::sendLoop()
 
     string message;
     while(1) {
+        cout << m_defModifier->toString() << "YOU: ";
+        cout.flush();
         getInput(message);
         writeMessage(message);
     }

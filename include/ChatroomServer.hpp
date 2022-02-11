@@ -6,6 +6,7 @@
 #include <memory>
 #include <time.h>
 #include "User.hpp"
+#include "Colormod.hpp"
 
 using namespace uv;
 
@@ -31,6 +32,7 @@ private:
     TcpServer* m_server;
     EventLoop* m_loop;
     map<string, shared_ptr<User>> m_address2User;
+    Color::Modifier *m_colors;
     std::thread m_thread;
 
     void onNewConnectCallback(weak_ptr<TcpConnection> tcpConn);

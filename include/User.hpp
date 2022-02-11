@@ -20,7 +20,7 @@ public:
     int write(const char* buf, ssize_t size, uv::AfterWriteCallback callback);
 
 public:
-    uint32_t m_color;
+    uint32_t m_colorIndex;
 
 private:
     uv::TcpConnectionPtr m_tcpConnPtr;

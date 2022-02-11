@@ -5,6 +5,7 @@
 #include <uv11.hpp>
 #include <string>
 #include <functional>
+#include "Colormod.hpp"
 
 namespace Damon{
 
@@ -32,11 +33,12 @@ private:
 private:
     std::atomic<bool> m_init;
     std::atomic<bool> m_loggedIn;
-    uv::EventLoop* m_loop;
+    uv::EventLoop *m_loop;
     uv::TcpClientPtr m_tcpClient;
     std::string m_username;
     std::thread m_reciveThread;
     std::thread m_sendThread;
+    Color::Modifier *m_defModifier;
 };
 
 }

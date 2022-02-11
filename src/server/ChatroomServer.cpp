@@ -21,6 +21,13 @@ uint32_t ChatroomServer::init()
     cout << "init chatroom server \n";
     if (m_init == false)
     {
+        // init color with six basic color to identity diffrent users for client
+        using namespace Color;
+        this->m_colors = new Modifier[COLOR_TYPES];
+        for (int i = 0, j = RED; i < COLOR_TYPES; i++, j++) {
+            this->m_colors[i] = Modifier(static_cast<Code>(j));
+        }
+
         m_loop = EventLoop::DefaultLoop();
         SocketAddr addr("0.0.0.0", 10010, SocketAddr::Ipv4);
         // set each callback
@@ -88,15 +95,27 @@ void ChatroomServer::onNewConnectCallback(weak_ptr<TcpConnection> tcpConn)
     // set the color for the client
     // pick up a color when the client comes firstly, currently exist six kind of color
     srand(time(NULL));
-    uint32_t color = (rand() % 5);
-    pUser->m_color = color;
+    uint32_t colorIndex = (rand() % 6);
+    pUser->m_colorIndex = colorIndex;
 }
 
 void ChatroomServer::onConnectCloseCallback(weak_ptr<TcpConnection> tcpConn)
 {
     cout << "connection close \n";
+
+    uv::TcpConnectionPtr tcpPtr = tcpConn.lock();
+    string addressName = tcpPtr->Name();
+    shared_ptr<User> pUser = m_address2User.at(addressName);
+    string username = pUser->getName();
+    string color = m_colors[pUser->m_colorIndex].toString();
+    string helloMessage = " has left the chatroom";
+    string message = color + username + helloMessage;
+
+    // broadcast the message
+    broadcastMessage(addressName, message);
     auto sharedTcpConnPtr = tcpConn.lock();
     m_address2User.erase(sharedTcpConnPtr->Name());
+
 }
 
 void ChatroomServer::onMessageCallback(uv::TcpConnectionPtr ptr, const char *data, ssize_t size)
@@ -115,13 +134,21 @@ void ChatroomServer::onMessageCallback(uv::TcpConnectionPtr ptr, const char *dat
         {
             string username = strData.substr(6, size);
             pUser->setName(username);
+            // broadcast that new chatter has coming
+            string color = m_colors[pUser->m_colorIndex].toString();
+            string helloMessage = " has join in the chatroom";
+            string message = color + username + helloMessage;
+
+            // broadcast the message
+            broadcastMessage(addressName, message);
         }
         else
         {
             shared_ptr<User> pUser = m_address2User.at(addressName);
             string senderName = pUser->getName();
-            uint32_t senderColor = pUser->m_color;
-            string message = to_string(senderColor) + "#" + senderName + " : " + strData;
+            string color = m_colors[pUser->m_colorIndex].toString();
+            string message = color + senderName + " : " + strData;
+            cout << "show message" << message << endl;
 
             // broadcast the message
             broadcastMessage(addressName, message);
