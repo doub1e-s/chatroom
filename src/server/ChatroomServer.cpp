@@ -1,24 +1,26 @@
 #include "ChatroomServer.hpp"
 
+INITIALIZE_EASYLOGGINGPP
+
 using namespace Damon;
 using namespace std;
 
 ChatroomServer::ChatroomServer()
     : m_init(false), m_loop(0), m_server(0)
 {
-    cout << "create server \n";
+    LOG(INFO) << "create server \n";
 }
 
 ChatroomServer::~ChatroomServer()
 {
-    cout << "destruct chatroom server\n";
+    LOG(INFO) << "destruct chatroom server\n";
     stop();
 }
 
 // use configure file to decide which port to listening
 uint32_t ChatroomServer::init()
 {
-    cout << "init chatroom server \n";
+    LOG(INFO) << "init chatroom server \n";
     if (m_init == false)
     {
         // init color with six basic color to identity diffrent users for client
@@ -34,14 +36,14 @@ uint32_t ChatroomServer::init()
 
         m_server = new uv::TcpServer(m_loop);
         // setup callback functions
-        cout << "bind callback function \n";
+        LOG(INFO) << "bind callback function \n";
         using namespace std::placeholders;
         m_server->setNewConnectCallback(bind(&ChatroomServer::onNewConnectCallback, this, _1));
         m_server->setConnectCloseCallback(bind(&ChatroomServer::onConnectCloseCallback, this, _1));
         m_server->setMessageCallback(bind(&ChatroomServer::onMessageCallback, this, _1, _2, _3));
 
         m_server->bindAndListen(addr);
-        cout << "bind success, the port is addr" << addr.toStr() << endl;
+        LOG(INFO) << "bind success, the port is addr" << addr.toStr() << endl;
         start();
     }
 
@@ -50,17 +52,16 @@ uint32_t ChatroomServer::init()
 
 void ChatroomServer::start()
 {
-    cout << "start \n";
+    LOG(INFO) << "start \n";
     m_thread = thread(&ChatroomServer::run, this);
 }
 
 void ChatroomServer::run()
 {
-    cout << "do run \n";
+    LOG(INFO) << "do run \n";
     m_loop->run();
 
-    cout << "loop end \n";
-
+    LOG(INFO) << "loop end \n";
     delete m_loop;
 }
 
@@ -70,12 +71,12 @@ void ChatroomServer::stop()
     if (m_init)
     {
         m_init = false;
-        cout << "stop loop \n";
+        LOG(INFO) << "stop loop \n";
         EventLoop *loop = m_loop;
         m_loop->runInThisLoop([loop]()
                               { loop->stop(); });
 
-        cout << "stop thread \n";
+        LOG(INFO) << "stop thread \n";
         if (m_thread.joinable())
         {
             m_thread.join();
@@ -86,7 +87,7 @@ void ChatroomServer::stop()
 
 void ChatroomServer::onNewConnectCallback(weak_ptr<TcpConnection> tcpConn)
 {
-    cout << " new connect coming \n";
+    LOG(INFO) << " new connect coming \n";
     auto sharedTcpConnPtr = tcpConn.lock();
     shared_ptr<User> pUser = make_shared<User>(sharedTcpConnPtr);
     string userName = sharedTcpConnPtr->Name();
@@ -101,7 +102,7 @@ void ChatroomServer::onNewConnectCallback(weak_ptr<TcpConnection> tcpConn)
 
 void ChatroomServer::onConnectCloseCallback(weak_ptr<TcpConnection> tcpConn)
 {
-    cout << "connection close \n";
+    LOG(INFO) << "connection close \n";
 
     uv::TcpConnectionPtr tcpPtr = tcpConn.lock();
     string addressName = tcpPtr->Name();
@@ -126,7 +127,7 @@ void ChatroomServer::onMessageCallback(uv::TcpConnectionPtr ptr, const char *dat
     // make sure the message isn't empty
     if (size != 0 && data[0] != 0 && m_address2User.find(addressName) != m_address2User.end())
     {
-        // cout << "find name " << endl;
+        // LOG(INFO) << "find name " << endl;
         shared_ptr<User> pUser = m_address2User.at(addressName);
         // set name, callback to client
         string strData(data);
@@ -146,9 +147,9 @@ void ChatroomServer::onMessageCallback(uv::TcpConnectionPtr ptr, const char *dat
         {
             shared_ptr<User> pUser = m_address2User.at(addressName);
             string senderName = pUser->getName();
+            LOG(INFO) << senderName << " : " << strData << endl;
             string color = m_colors[pUser->m_colorIndex].toString();
             string message = color + senderName + " : " + strData;
-            cout << "show message" << message << endl;
 
             // broadcast the message
             broadcastMessage(addressName, message);
@@ -173,7 +174,7 @@ int ChatroomServer::broadcastMessage(const string& sender, const string& message
 }
 
 
-std::thread& ChatroomServer::getThread()
+thread& ChatroomServer::getThread()
 {
     return m_thread;
 }

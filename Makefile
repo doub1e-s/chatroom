@@ -13,7 +13,7 @@ DEP_OBJ_DIR = $(CUR_PATH)/3rdparty/libuv/build $(CUR_PATH)/3rdparty/uv-cpp/build
 # g++的对应参数
 INC_DIR	= -Iinclude -I3rdparty/uv-cpp/uv/include -I3rdparty/uv-cpp/libuv1.30.0/include
 LIB_DIR = -L$(OBJ_DIR)/lib
-LIB_NAME= -luv_cpp -luv -pthread
+LIB_NAME= -luv_cpp -luv -leasyloggingpp -pthread
 
 
 # SOURCES := $(wildcard $(SRC_DIR)/$(SERVER_DIR)/*.cpp $(SRC_DIR)/$(CLIENT_DIR)/.*cpp $(SRC_DIR))
@@ -48,8 +48,10 @@ all : dep client server
 # WARNING: 运行失败记得看下动态库的位置是否包含了
 # 构建所需依赖，将所有的依赖都放入build文件夹中，使build文件夹就包含所有运行所需文件
 dep :
-	@mkdir -p 3rdparty/libuv/build && cd 3rdparty/libuv/build && cmake .. && make
+	@mkdir -p $(CUR_PATH)/3rdparty/libuv/build && cd $(CUR_PATH)/3rdparty/libuv/build && cmake .. && make
 	@mkdir -p $(CUR_PATH)/3rdparty/uv-cpp/build && cd $(CUR_PATH)/3rdparty/uv-cpp/build && cmake .. && make
+	@mkdir -p $(CUR_PATH)/3rdparty/easyloggingpp/build && cd $(CUR_PATH)/3rdparty/easyloggingpp/build && \
+		cmake -build_static_lib=ON .. && make && make install
 	@cd $(CUR_PATH) && mkdir -p build/lib && \
 		cp -r 3rdparty/uv-cpp/build/libuv_cpp* 3rdparty/libuv/build/libuv* build/lib
 

@@ -5,10 +5,13 @@
 #include <map>
 #include <memory>
 #include <time.h>
+#include <unistd.h>
 #include "User.hpp"
 #include "Colormod.hpp"
+#include "easylogging++.h"
 
 using namespace uv;
+
 
 namespace Damon{
 
@@ -29,8 +32,8 @@ public:
 
 private:
     std::atomic<bool> m_init;
-    TcpServer* m_server;
     EventLoop* m_loop;
+    TcpServer* m_server;
     map<string, shared_ptr<User>> m_address2User;
     Color::Modifier *m_colors;
     std::thread m_thread;

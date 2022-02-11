@@ -1,3 +1,4 @@
+/*
 #include "Colormod.hpp" // namespace Color
 #include <iostream>
 #include <uv11.hpp>
@@ -59,7 +60,7 @@ int main() {
     // Color::Modifier cyan(Color::CYAN);
     // cout << "This ->" << cyan << "word" << def << "<- is cyan." << endl;
 
-    string ss = def.toStr() + "hello";
+    string ss = def.toString() + "hello";
     cout << ss << endl;
 
     // cout << "This is \r" << "a line" << endl;
@@ -93,18 +94,25 @@ int main() {
 
 }
 
-/*
+*/
+
 
 // use easylogging as log lib if it's nessesary
 // build easylogging as static library firstly
 #include "easylogging++.h"
+#include <unistd.h>
 
 INITIALIZE_EASYLOGGINGPP
 
 // install the lib and add it when compiling
-int main(int argc, char* argv[]) {
-   LOG(INFO) << "My first info log using default logger";
-   return 0;
+int main(int argc, char *argv[])
+{
+    std::string currentPath = get_current_dir_name();
+    std::string logPath = currentPath + "/src/conf/log.conf";
+    el::Configurations conf(logPath);
+    // el::Loggers::reconfigureLogger("default", conf);
+    el::Loggers::reconfigureAllLoggers(conf);
+    LOG(INFO) << logPath;
+    LOG(INFO) << "My first info log using default logger";
+    return 0;
 }
-
-*/
