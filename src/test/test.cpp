@@ -97,12 +97,16 @@ int main() {
 */
 
 
+/*
 // use easylogging as log lib if it's nessesary
 // build easylogging as static library firstly
-#include "easylogging++.h"
 #include <unistd.h>
+#include "easylogging++.h"
+
 
 INITIALIZE_EASYLOGGINGPP
+
+using namespace std;
 
 // install the lib and add it when compiling
 int main(int argc, char *argv[])
@@ -116,3 +120,4 @@ int main(int argc, char *argv[])
     LOG(INFO) << "My first info log using default logger";
     return 0;
 }
+*/
