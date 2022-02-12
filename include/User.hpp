@@ -25,7 +25,6 @@ public:
 private:
     uv::TcpConnectionPtr m_tcpConnPtr;
     string m_name;
-    int age;
 };
 
 }

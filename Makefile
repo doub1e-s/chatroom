@@ -51,7 +51,10 @@ dep :
 	@mkdir -p $(CUR_PATH)/3rdparty/libuv/build && cd $(CUR_PATH)/3rdparty/libuv/build && cmake .. && make
 	@mkdir -p $(CUR_PATH)/3rdparty/uv-cpp/build && cd $(CUR_PATH)/3rdparty/uv-cpp/build && cmake .. && make
 	@mkdir -p $(CUR_PATH)/3rdparty/easyloggingpp/build && cd $(CUR_PATH)/3rdparty/easyloggingpp/build && \
-		cmake -build_static_lib=ON .. && make && make install
+		cmake -Dbuild_static_lib=ON .. && make && \
+		echo "安装静态库需要管理员权限,请输入root用户密码 // \
+		Install static lib require administrative privileges, please insert root password " && \
+		sudo make install
 	@cd $(CUR_PATH) && mkdir -p build/lib && \
 		cp -r 3rdparty/uv-cpp/build/libuv_cpp* 3rdparty/libuv/build/libuv* build/lib
 
@@ -83,5 +86,6 @@ $(OBJ_DIR)/$(TEST_DIR)/test: $(TEST_OBJ)
 
 .PHONY:clean
 
+# don't delete the 3rdparty's build path and the installed static library
 clean:
 	@rm -rf $(OBJ_DIR) $(DEP_OBJ_DIR)
