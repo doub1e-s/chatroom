@@ -63,8 +63,9 @@ std::thread& ChatroomClient::getSendThread()
 void ChatroomClient::onConnectStatusCallback(uv::TcpClient::ConnectStatus status)
 {
     if (status == uv::TcpClient::ConnectStatus::OnConnectSuccess) {
-        int dataLength = m_username.length() + 1;
-        char *data = &m_username[0];
+        string message = "#name:" + m_username;
+        int dataLength = message.length() + 1;
+        char *data = &message[0];
         m_tcpClient->write(data, dataLength, nullptr);
     } else {
         std::cout << "Error : connect to server fail, please check the netstatus and the server statement" << std::endl;
@@ -93,7 +94,7 @@ void ChatroomClient::getInput(string& input)
     }
 }
 
-void ChatroomClient::writeMessage(string message)
+void ChatroomClient::writeMessage(string& message)
 {
     int dataLength = message.length() + 1;
     char *char_arr = &message[0];
@@ -119,8 +120,6 @@ void ChatroomClient::sendLoop()
     // for recive thread
     cout << "login success, your name is " << m_username << "\n";
     m_loggedIn = true;
-    string registerMessage = "#name:" + m_username;
-    writeMessage(registerMessage);
 
     string message;
     while(1) {

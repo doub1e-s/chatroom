@@ -26,7 +26,7 @@ private:
     void onConnectStatusCallback(uv::TcpClient::ConnectStatus status);
     void onMessageCallback(const char* data, ssize_t size);
     void getInput(std::string& input);
-    inline void writeMessage(std::string message);
+    inline void writeMessage(std::string& message);
     void run();
     void sendLoop();
 
@@ -36,6 +36,7 @@ private:
     uv::EventLoop *m_loop;
     uv::TcpClientPtr m_tcpClient;
     std::string m_username;
+    std::string m_senderName;
     std::thread m_reciveThread;
     std::thread m_sendThread;
     Color::Modifier *m_defModifier;
